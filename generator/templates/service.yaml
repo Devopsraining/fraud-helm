@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
+  annotations:
+    beta.cloud.google.com/backend-config: '{"default":"backend-config-{{ $.Values.common.envName }}"}'
+    cloud.google.com/neg: '{"ingress": true}'
+    cloud.google.com/app-protocols: '{"http":"HTTP"}'
+  labels:
+    app: {{ $.Values.common.name }}
+    chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    component: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    component: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
