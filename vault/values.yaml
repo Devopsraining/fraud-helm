@@ -1,3 +1,7 @@
+global:
+  enabled: true
+  externalVaultAddr: "http://vault.fraud.local"
+
 injector:
   enabled: true
 
@@ -9,6 +13,15 @@ injector:
     repository: hashicorp/vault
     tag: "1.21.0"
 
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 100m
+
+    limits:
+      memory: 256Mi
+      cpu: 200m
+
 server:
   enabled: true
 
@@ -17,6 +30,21 @@ server:
     tag: "1.21.0"
 
   logLevel: "debug"
+
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 200m
+
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+  readinessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true"
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
 
   service:
     enabled: true
@@ -31,10 +59,13 @@ server:
       kubernetes.io/ingress.global-static-ip-name: vault-ip
 
     hosts:
-      - host: vault.fraud.local
+      - host: vault.yourdomain.com
         paths:
           - path: /
             pathType: Prefix
+
+  standalone:
+    enabled: false
 
   ha:
     enabled: true
@@ -51,6 +82,17 @@ server:
           tls_disable = 1
           address = "[::]:8200"
           cluster_address = "[::]:8201"
+
+          telemetry {
+            unauthenticated_metrics_access = "true"
+          }
+        }
+
+        max_lease_ttl = "90d"
+
+        telemetry {
+          disable_hostname = true
+          prometheus_retention_time = "6h"
         }
 
         storage "raft" {
@@ -77,6 +119,13 @@ server:
     annotations:
       iam.gke.io/gcp-service-account: vault-sa@devops-492107.iam.gserviceaccount.com
 
-  ui:
+  disruptionBudget:
     enabled: true
-    serviceType: ClusterIP
+    maxUnavailable: 1
+
+ui:
+  enabled: true
+  serviceType: ClusterIP
+
+csi:
+  enabled: false
