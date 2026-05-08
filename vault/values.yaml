@@ -29,11 +29,8 @@ injector:
 server:
   enabled: true
 
-  image:
-    repository: hashicorp/vault
-    tag: "1.21.0"
-
-  logLevel: "debug"
+  authDelegator:
+    enabled: true
 
   networkPolicy:
     enabled: false
@@ -46,6 +43,21 @@ server:
 
   dev:
     enabled: false
+
+  image:
+    repository: hashicorp/vault
+    tag: "1.21.0"
+
+  logLevel: "debug"
+
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 200m
+
+    limits:
+      memory: 512Mi
+      cpu: 500m
 
   readinessProbe:
     enabled: true
