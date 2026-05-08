@@ -1,6 +1,7 @@
 global:
   enabled: true
-  externalVaultAddr: "http://vault.fraud.local"
+  tlsDisable: true
+  externalVaultAddr: "http://vault.yourdomain.com"
 
 injector:
   enabled: true
