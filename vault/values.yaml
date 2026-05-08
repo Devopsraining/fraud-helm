@@ -1,144 +1,129 @@
 vault:
   injector:
+    enabled: true
+
     image:
-      repository: gcr.io/vault/vault-k8s
+      repository: hashicorp/vault-k8s
       tag: "1.7.0"
 
     agentImage:
-      repository: gcr.io/vault/vault
-      tag: "1.21"
+      repository: hashicorp/vault
+      tag: "1.21.0"
 
     resources:
       requests:
-        memory: 256Mi
-        cpu: 300m
+        memory: 128Mi
+        cpu: 100m
 
       limits:
-        memory: 200Mi
+        memory: 256Mi
         cpu: 200m
 
   server:
-    image:
-      repository: gcr.io/vault/vault
-      tag: "1.21"
+    enabled: true
 
-    updateStrategyType: "RollingUpdate"
+    image:
+      repository: hashicorp/vault
+      tag: "1.21.0"
+
     logLevel: "debug"
 
     resources:
       requests:
         memory: 256Mi
-        cpu: 300m
+        cpu: 200m
 
       limits:
-        memory: 256Mi
-        cpu: 300m
+        memory: 512Mi
+        cpu: 500m
 
     readinessProbe:
       enabled: true
-      path: /v1/sys/health?standbyok=true
+      path: "/v1/sys/health?standbyok=true"
       initialDelaySeconds: 30
       timeoutSeconds: 5
 
     service:
-      type: NodePort
-
-      annotations:
-        cloud.google.com/neg: '{"ingress": true}'
-        cloud.google.com/backend-config: '{"ports": {"https":"fraud-vault-internal-backend-config"}}'
+      enabled: true
+      type: ClusterIP
 
     ingress:
       enabled: true
-      activeService: false
+      ingressClassName: gce
 
       annotations:
-        kubernetes.io/ingress.allow-http: "false"
-        kubernetes.io/ingress.class: gce-external
-        kubernetes.io/ingress.global-static-ip-name: vault-ingress-ip
-        kubernetes.io/ingress.ssl-redirect: "true"
+        kubernetes.io/ingress.allow-http: "true"
+        kubernetes.io/ingress.global-static-ip-name: vault-ip
 
       hosts:
-        - host: fraud-vault-dev-internal.gcp.tmw.com
-          http:
-            paths:
-              - pathType: Prefix
-                path: /
-                backend:
-                  service:
-                    name: fraud-vault-dev-internal
-                    port:
-                      number: 8200
+        - host: vault.fraud-internal.com
+          paths:
+            - path: /
+              pathType: Prefix
 
-      tls:
-        - hosts:
-            - fraud-vault-dev-internal.gcp.tmw.com
-          secretName: fraud-vault-dev-internal-tls
-
-    serviceAccount:
-      annotations:
-        iam.gke.io/gcp-service-account: fraud-vault-dev-internal-sa@devops-492107.iam.gserviceaccount.com
+    standalone:
+      enabled: false
 
     ha:
       enabled: true
       replicas: 3
 
-      config: |
-        ui = true
+      raft:
+        enabled: true
+        setNodeId: true
 
-        listener "tcp" {
-          tls_disable = 1
-          address = "[::]:8200"
-          cluster_address = "[::]:8201"
+        config: |
+          ui = true
+
+          listener "tcp" {
+            tls_disable = 1
+            address = "[::]:8200"
+            cluster_address = "[::]:8201"
+
+            telemetry {
+              unauthenticated_metrics_access = "true"
+            }
+          }
+
+          max_lease_ttl = "90d"
 
           telemetry {
-            unauthenticated_metrics_access = "true"
+            disable_hostname = true
+            prometheus_retention_time = "6h"
           }
-        }
 
-        max_lease_ttl = "90d"
+          storage "raft" {
+            path = "/vault/data"
+          }
 
-        telemetry {
-          disable_hostname = true
-          prometheus_retention_time = "6h"
-        }
+          seal "gcpckms" {
+            project    = "devops-492107"
+            region     = "global"
+            key_ring   = "vault"
+            crypto_key = "vault"
+          }
 
-        # Example configuration for using auto-unseal, using Google Cloud KMS.
-        # The GKMS keys must already exist, and the cluster must have a service account
-        # that is authorized to access GCP KMS.
+          service_registration "kubernetes" {}
 
-        seal "gcpckms" {
-          project    = "devops-492107"
-          region     = "global"
-          key_ring   = "vault"
-          crypto_key = "vault"
-        }
+    dataStorage:
+      enabled: true
+      size: 10Gi
+      storageClass: standard-rwo
 
-        storage "gcs" {
-          bucket     = "fraud-vault-bucket-1a03"
-          ha_enabled = "true"
-        }
+    serviceAccount:
+      create: true
+
+      annotations:
+        iam.gke.io/gcp-service-account: vault-sa@devops-492107.iam.gserviceaccount.com
 
     disruptionBudget:
       enabled: true
-      maxUnavailable: 2
+      maxUnavailable: 1
 
     ui:
-      activeVaultPodOnly: false
       enabled: true
+      serviceType: ClusterIP
       externalPort: 8200
-      publishNotReadyAddresses: true
-      serviceNodePort: null
-      serviceType: NodePort
 
-    ingressGCE:
-      enabled: true
-      host: vault-dev-internal.gcp.tmw.com
-      staticIPName: vault-ingress-ip
-      annotations:
-        cloud.google.com/neg: '{"ingress": true}'
-      sslPolicy: ssl-policy
-
-    externalSecrets:
-      enabled: true   # disable for 1st deploy
-      store: vault-gke-cluster-vault
-      name: fraud-vault-dev-internal-tls
+  csi:
+    enabled: false
