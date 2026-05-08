@@ -17,6 +17,15 @@ injector:
     repository: hashicorp/vault
     tag: "1.21.0"
 
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 100m
+
+    limits:
+      memory: 256Mi
+      cpu: 200m
+
 server:
   enabled: true
 
@@ -25,6 +34,24 @@ server:
     tag: "1.21.0"
 
   logLevel: "debug"
+
+  networkPolicy:
+    enabled: false
+
+  podSecurityPolicy:
+    enabled: false
+
+  auditStorage:
+    enabled: false
+
+  dev:
+    enabled: false
+
+  readinessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true"
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
 
   service:
     enabled: true
@@ -62,6 +89,17 @@ server:
           tls_disable = 1
           address = "[::]:8200"
           cluster_address = "[::]:8201"
+
+          telemetry {
+            unauthenticated_metrics_access = "true"
+          }
+        }
+
+        max_lease_ttl = "90d"
+
+        telemetry {
+          disable_hostname = true
+          prometheus_retention_time = "6h"
         }
 
         storage "raft" {
@@ -87,6 +125,10 @@ server:
 
     annotations:
       iam.gke.io/gcp-service-account: vault-sa@devops-492107.iam.gserviceaccount.com
+
+  disruptionBudget:
+    enabled: true
+    maxUnavailable: 1
 
 ui:
   enabled: true
