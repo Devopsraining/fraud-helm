@@ -1,129 +1,82 @@
-vault:
-  injector:
+injector:
+  enabled: true
+
+  image:
+    repository: hashicorp/vault-k8s
+    tag: "1.7.0"
+
+  agentImage:
+    repository: hashicorp/vault
+    tag: "1.21.0"
+
+server:
+  enabled: true
+
+  image:
+    repository: hashicorp/vault
+    tag: "1.21.0"
+
+  logLevel: "debug"
+
+  service:
     enabled: true
+    type: ClusterIP
 
-    image:
-      repository: hashicorp/vault-k8s
-      tag: "1.7.0"
-
-    agentImage:
-      repository: hashicorp/vault
-      tag: "1.21.0"
-
-    resources:
-      requests:
-        memory: 128Mi
-        cpu: 100m
-
-      limits:
-        memory: 256Mi
-        cpu: 200m
-
-  server:
+  ingress:
     enabled: true
+    ingressClassName: gce
 
-    image:
-      repository: hashicorp/vault
-      tag: "1.21.0"
+    annotations:
+      kubernetes.io/ingress.allow-http: "true"
+      kubernetes.io/ingress.global-static-ip-name: vault-ip
 
-    logLevel: "debug"
+    hosts:
+      - host: vault.fraud.local
+        paths:
+          - path: /
+            pathType: Prefix
 
-    resources:
-      requests:
-        memory: 256Mi
-        cpu: 200m
+  ha:
+    enabled: true
+    replicas: 3
 
-      limits:
-        memory: 512Mi
-        cpu: 500m
-
-    readinessProbe:
+    raft:
       enabled: true
-      path: "/v1/sys/health?standbyok=true"
-      initialDelaySeconds: 30
-      timeoutSeconds: 5
+      setNodeId: true
 
-    service:
-      enabled: true
-      type: ClusterIP
+      config: |
+        ui = true
 
-    ingress:
-      enabled: true
-      ingressClassName: gce
+        listener "tcp" {
+          tls_disable = 1
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+        }
 
-      annotations:
-        kubernetes.io/ingress.allow-http: "true"
-        kubernetes.io/ingress.global-static-ip-name: vault-ip
+        storage "raft" {
+          path = "/vault/data"
+        }
 
-      hosts:
-        - host: vault.fraud-internal.com
-          paths:
-            - path: /
-              pathType: Prefix
+        seal "gcpckms" {
+          project    = "devops-492107"
+          region     = "global"
+          key_ring   = "vault"
+          crypto_key = "vault"
+        }
 
-    standalone:
-      enabled: false
+        service_registration "kubernetes" {}
 
-    ha:
-      enabled: true
-      replicas: 3
+  dataStorage:
+    enabled: true
+    size: 10Gi
+    storageClass: standard-rwo
 
-      raft:
-        enabled: true
-        setNodeId: true
+  serviceAccount:
+    create: true
 
-        config: |
-          ui = true
+    annotations:
+      iam.gke.io/gcp-service-account: vault-sa@devops-492107.iam.gserviceaccount.com
 
-          listener "tcp" {
-            tls_disable = 1
-            address = "[::]:8200"
-            cluster_address = "[::]:8201"
-
-            telemetry {
-              unauthenticated_metrics_access = "true"
-            }
-          }
-
-          max_lease_ttl = "90d"
-
-          telemetry {
-            disable_hostname = true
-            prometheus_retention_time = "6h"
-          }
-
-          storage "raft" {
-            path = "/vault/data"
-          }
-
-          seal "gcpckms" {
-            project    = "devops-492107"
-            region     = "global"
-            key_ring   = "vault"
-            crypto_key = "vault"
-          }
-
-          service_registration "kubernetes" {}
-
-    dataStorage:
-      enabled: true
-      size: 10Gi
-      storageClass: standard-rwo
-
-    serviceAccount:
-      create: true
-
-      annotations:
-        iam.gke.io/gcp-service-account: vault-sa@devops-492107.iam.gserviceaccount.com
-
-    disruptionBudget:
-      enabled: true
-      maxUnavailable: 1
-
-    ui:
-      enabled: true
-      serviceType: ClusterIP
-      externalPort: 8200
-
-  csi:
-    enabled: false
+  ui:
+    enabled: true
+    serviceType: ClusterIP
