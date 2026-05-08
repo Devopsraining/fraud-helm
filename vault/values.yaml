@@ -6,6 +6,9 @@ global:
   psp:
     enable: false
 
+  serverTelemetry:
+    prometheusOperator: false
+
 injector:
   enabled: true
 
