@@ -50,14 +50,7 @@ resources:
   requests:
     cpu: 100m
     memory: 100Mi
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
 readinessProbe:
-  httpGet:
-    path: /
-    port: http
 autoscaling:
   enabled: true
   minReplicas: 1
