@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   repository: gcr.io/devops-492107/processor
   pullPolicy: IfNotPresent
-  tag: ''
+  tag: '9'
 serviceAccount:
   create: false
   name: fraud-ksa
