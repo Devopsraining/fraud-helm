@@ -1,0 +1,69 @@
+common:
+  envName: dev
+  name: ecom-backend
+replicaCount: 1
+image:
+  repository: gcr.io/devops-492107/ecommerce-frontend/ecommerce-backend
+  pullPolicy: IfNotPresent
+  tag: '17'
+environment: dev
+imagePullSecrets: []
+nameOverride: ''
+fullnameOverride: ''
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: fraud-ksa
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+healthCheck:
+  port: 80
+  requestPath: /actuator
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 5000
+httpRoute:
+  enabled: false
+ingress:
+  enabled: false
+  annotations:
+    kubernetes.io/ingress.allow-http: 'false'
+    kubernetes.io/ingress.regional-static-ip-name: ecom-backend-static-ip
+    kubernetes.io/ingress.class: gce-internal
+  hosts:
+    - host: ecom-backend.internal
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: ecom-backend-tls
+      hosts:
+        - ecom-backend.internal
+resources:
+  limits:
+    cpu: 200m
+    memory: 500Mi
+  requests:
+    cpu: 200m
+    memory: 500Mi
+readinessProbe: null
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 80
+volumes:
+  - name: batch-volume
+    emptyDir:
+      sizeLimit: 1Gi
+volumeMounts:
+  - name: batch-volume
+    mountPath: /data/batch
+    readOnly: false
+nodeSelector: {}
+tolerations: []
+affinity: {}
