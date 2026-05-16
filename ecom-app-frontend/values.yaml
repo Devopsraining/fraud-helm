@@ -5,7 +5,7 @@ replicaCount: 1
 image:
   repository: gcr.io/devops-492107/ecommerce-frontend/ecommerce-frontend
   pullPolicy: IfNotPresent
-  tag: '11'
+  tag: ''
 environment: dev
 imagePullSecrets: []
 nameOverride: ''
@@ -50,7 +50,7 @@ resources:
   requests:
     cpu: 200m
     memory: 200Mi
-readinessProbe:
+readinessProbe: null
 autoscaling:
   enabled: true
   minReplicas: 1
