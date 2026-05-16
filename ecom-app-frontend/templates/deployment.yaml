@@ -47,17 +47,6 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env:
-          - name: DB_USERNAME
-            valueFrom:
-              secretKeyRef:
-                key: username
-                name: {{ $.Values.common.envName }}-{{ $.Values.common.name }}-db
-          - name: DB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                key: password
-                name: {{ $.Values.common.envName }}-{{ $.Values.common.name }}-db
           volumeMounts:
           {{- with .Values.volumeMounts }}
           {{- toYaml . | nindent 12 }}
