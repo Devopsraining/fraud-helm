@@ -23,7 +23,7 @@ healthCheck:
   port: 8080
   requestPath: /actuator
 service:
-  type: NodePort
+  type: LoadBalancer
   port: 80
   targetPort: 8080
 httpRoute:
