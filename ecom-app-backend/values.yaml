@@ -3,7 +3,7 @@ common:
   name: ecom-backend
 replicaCount: 1
 image:
-  repository: gcr.io/devops-492107/ecommerce-frontend/ecommerce-backend
+  repository: gcr.io/devops-492107/ecommerce-backend/ecommerce-backend
   pullPolicy: IfNotPresent
   tag: '17'
 environment: dev
