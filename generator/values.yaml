@@ -13,7 +13,8 @@ fullnameOverride: ''
 serviceAccount:
   create: true
   automount: true
-  annotations: {}
+  annotations:
+    iam.gke.io/gcp-service-account: fraud-sa@devops-492107.iam.gserviceaccount.com
   name: fraud-sa
 podAnnotations: {}
 podLabels: {}
