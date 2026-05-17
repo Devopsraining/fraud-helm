@@ -1,28 +1,69 @@
+common:
+  envName: dev
+  name: processor
 replicaCount: 1
 image:
   repository: gcr.io/devops-492107/processor
   pullPolicy: IfNotPresent
-  tag: '10'
+  tag: '12'
+environment: dev
+imagePullSecrets: []
+nameOverride: ''
+fullnameOverride: ''
 serviceAccount:
-  create: false
+  create: true
+  automount: true
+  annotations: {}
   name: fraud-ksa
-ingress:
-  enabled: false
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+healthCheck:
+  port: 8080
+  requestPath: /actuator
+service:
+  type: NodePort
+  port: 80
+  targetPort: 8080
 httpRoute:
   enabled: false
-service:
+ingress:
   enabled: false
+  annotations:
+    kubernetes.io/ingress.allow-http: 'false'
+    kubernetes.io/ingress.regional-static-ip-name: processor-static-ip
+    kubernetes.io/ingress.class: gce-internal
+  hosts:
+    - host: processor.internal
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: processor-tls
+      hosts:
+        - processor.internal
 resources:
   limits:
-    cpu: 200m
-    memory: 256Mi
+    cpu: 100m
+    memory: 100Mi
   requests:
     cpu: 100m
-    memory: 128Mi
-livenessProbe: null
+    memory: 100Mi
 readinessProbe: null
 autoscaling:
-  enabled: false
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 80
+volumes:
+  - name: batch-volume
+    emptyDir:
+      sizeLimit: 1Gi
+volumeMounts:
+  - name: batch-volume
+    mountPath: /data/batch
+    readOnly: false
 nodeSelector: {}
 tolerations: []
 affinity: {}
