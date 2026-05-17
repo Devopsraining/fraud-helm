@@ -1,48 +1,46 @@
+affinity: {}
+autoscaling:
+  enabled: true
+  maxReplicas: 10
+  minReplicas: 2
+  targetCPUUtilizationPercentage: 80
 common:
   envName: dev
   name: ecom-frontend
-replicaCount: 5
-image:
-  repository: gcr.io/devops-492107/ecommerce-frontend/ecommerce-frontend
-  pullPolicy: IfNotPresent
-  tag: '17'
 environment: dev
-imagePullSecrets: []
-nameOverride: ''
 fullnameOverride: ''
-serviceAccount:
-  create: true
-  automount: true
-  annotations: {}
-  name: fraud-ksa
-podAnnotations: {}
-podLabels: {}
-podSecurityContext: {}
-securityContext: {}
 healthCheck:
   port: 80
   requestPath: /actuator
-service:
-  type: LoadBalancer
-  port: 80
-  targetPort: 3000
 httpRoute:
   enabled: false
+image:
+  pullPolicy: IfNotPresent
+  repository: gcr.io/devops-492107/ecommerce-frontend/ecommerce-frontend
+  tag: '17'
+imagePullSecrets: []
 ingress:
-  enabled: false
   annotations:
     kubernetes.io/ingress.allow-http: 'false'
-    kubernetes.io/ingress.regional-static-ip-name: ecom-frontend-static-ip
     kubernetes.io/ingress.class: gce-internal
+    kubernetes.io/ingress.regional-static-ip-name: ecom-frontend-static-ip
+  enabled: false
   hosts:
-    - host: ecom-frontend.internal
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
+  - host: ecom-frontend.internal
+    paths:
+    - path: /
+      pathType: ImplementationSpecific
   tls:
-    - secretName: ecom-frontend-tls
-      hosts:
-        - ecom-frontend.internal
+  - hosts:
+    - ecom-frontend.internal
+    secretName: ecom-frontend-tls
+nameOverride: ''
+nodeSelector: {}
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+readinessProbe: null
+replicaCount: 8
 resources:
   limits:
     cpu: 200m
@@ -50,20 +48,22 @@ resources:
   requests:
     cpu: 200m
     memory: 1Gi
-readinessProbe: null
-autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 8
-  targetCPUUtilizationPercentage: 80
-volumes:
-  - name: batch-volume
-    emptyDir:
-      sizeLimit: 1Gi
-volumeMounts:
-  - name: batch-volume
-    mountPath: /data/batch
-    readOnly: false
-nodeSelector: {}
+securityContext: {}
+service:
+  port: 80
+  targetPort: 3000
+  type: LoadBalancer
+serviceAccount:
+  annotations: {}
+  automount: true
+  create: true
+  name: fraud-ksa
 tolerations: []
-affinity: {}
+volumeMounts:
+- mountPath: /data/batch
+  name: batch-volume
+  readOnly: false
+volumes:
+- emptyDir:
+    sizeLimit: 1Gi
+  name: batch-volume
