@@ -14,7 +14,7 @@ serviceAccount:
   create: true
   automount: true
   annotations: {}
-  name: fraud-ksa
+  name: fraud-sa
 podAnnotations: {}
 podLabels: {}
 podSecurityContext: {}
