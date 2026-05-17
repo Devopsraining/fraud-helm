@@ -1,16 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ml-service.fullname" . }}
+  name: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
   labels:
-    {{- include "ml-service.labels" . | nindent 4 }}
+    app: {{ $.Values.common.name }}
+    chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    component: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "ml-service.selectorLabels" . | nindent 6 }}
+      app: {{ $.Values.common.name }}
+      release: {{ $.Release.Name }}
+      component: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
+      chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
+      heritage: {{ $.Release.Service }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,20 +26,19 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "ml-service.labels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+        app: {{ $.Values.common.name }}
+        release: {{ $.Release.Name }}
+        component: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
+        chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
+        heritage: {{ $.Release.Service }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "ml-service.serviceAccountName" . }}
-      {{- with .Values.podSecurityContext }}
+      serviceAccountName: {{ $.Values.serviceAccount.name }}
       securityContext:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
@@ -40,9 +47,24 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: username
+                name: {{ $.Values.common.envName }}-{{ $.Values.common.name }}-db
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: {{ $.Values.common.envName }}-{{ $.Values.common.name }}-db
+          volumeMounts:
+          {{- with .Values.volumeMounts }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
           {{- with .Values.livenessProbe }}
           livenessProbe:
@@ -54,10 +76,6 @@ spec:
           {{- end }}
           {{- with .Values.resources }}
           resources:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-          {{- with .Values.volumeMounts }}
-          volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
       {{- with .Values.volumes }}

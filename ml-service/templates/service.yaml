@@ -1,9 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "ml-service.fullname" . }}
+  name: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
+  annotations:
+    beta.cloud.google.com/backend-config: '{"default":"backend-config-{{ $.Values.common.envName }}"}'
+    cloud.google.com/neg: '{"ingress": true}'
+    cloud.google.com/app-protocols: '{"http":"HTTP"}'
   labels:
-    {{- include "ml-service.labels" . | nindent 4 }}
+    app: {{ $.Values.common.name }}
+    chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    component: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +20,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "ml-service.selectorLabels" . | nindent 4 }}
+    component: {{ $.Values.common.envName }}-{{ $.Values.common.name }}

@@ -1,18 +1,23 @@
 {{- if .Values.ingress.enabled -}}
+{{- if semverCompare ">=1.19.0" .Capabilities.KubeVersion.GitVersion -}}
 apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: extensions/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
-  name: {{ include "ml-service.fullname" . }}
+  name: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
   labels:
-    {{- include "ml-service.labels" . | nindent 4 }}
+    app: {{ $.Values.common.name }}
+    chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    component: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- with .Values.ingress.className }}
-  ingressClassName: {{ . }}
-  {{- end }}
   {{- if .Values.ingress.tls }}
   tls:
     {{- range .Values.ingress.tls }}
@@ -35,7 +40,7 @@ spec:
             {{- end }}
             backend:
               service:
-                name: {{ include "ml-service.fullname" $ }}
+                name: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
                 port:
                   number: {{ $.Values.service.port }}
           {{- end }}
