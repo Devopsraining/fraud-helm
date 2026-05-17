@@ -53,8 +53,8 @@ resources:
 readinessProbe: null
 autoscaling:
   enabled: true
-  minReplicas: 1
-  maxReplicas: 5
+  minReplicas: 2
+  maxReplicas: 8
   targetCPUUtilizationPercentage: 80
 volumes:
   - name: batch-volume
