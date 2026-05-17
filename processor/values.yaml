@@ -5,7 +5,7 @@ replicaCount: 1
 image:
   repository: gcr.io/devops-492107/processor
   pullPolicy: IfNotPresent
-  tag: '12'
+  tag: '11'
 environment: dev
 imagePullSecrets: []
 nameOverride: ''
