@@ -5,7 +5,7 @@ replicaCount: 1
 image:
   repository: gcr.io/devops-492107/ml-service
   pullPolicy: IfNotPresent
-  tag: ''
+  tag: '9'
 environment: dev
 imagePullSecrets: []
 nameOverride: ''
