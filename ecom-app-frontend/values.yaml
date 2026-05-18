@@ -1,8 +1,8 @@
 affinity: {}
 autoscaling:
   enabled: true
-  maxReplicas: 10
-  minReplicas: 2
+  maxReplicas: 12
+  minReplicas: 3
   targetCPUUtilizationPercentage: 80
 common:
   envName: dev
@@ -40,7 +40,7 @@ podAnnotations: {}
 podLabels: {}
 podSecurityContext: {}
 readinessProbe: null
-replicaCount: 8
+replicaCount: 9
 resources:
   limits:
     cpu: 200m
