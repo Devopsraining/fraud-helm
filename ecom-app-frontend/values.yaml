@@ -40,7 +40,7 @@ podAnnotations: {}
 podLabels: {}
 podSecurityContext: {}
 readinessProbe: null
-replicaCount: 9
+replicaCount: 8
 resources:
   limits:
     cpu: 200m
