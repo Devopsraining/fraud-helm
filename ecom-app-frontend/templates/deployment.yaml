@@ -15,28 +15,8 @@ metadata:
 
     component: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
 
-    ###########################################################
-    # DATADOG UNIFIED TAGGING
-    ###########################################################
-
-    tags.datadoghq.com/env: "{{ $.Values.environment }}"
-
-    tags.datadoghq.com/service: "{{ $.Values.common.name }}"
-
-    tags.datadoghq.com/version: "{{ $.Values.image.tag }}"
-
-  #############################################################
-  # DATADOG DEPLOYMENT TAGGING
-  #############################################################
-
   annotations:
-
-    ad.datadoghq.com/tags: |
-      {
-        "env":"{{ $.Values.environment }}",
-        "service":"{{ $.Values.common.name }}",
-        "version":"{{ $.Values.image.tag }}"
-      }
+    deployment.kubernetes.io/revision: "12"
 
 spec:
 
@@ -60,29 +40,6 @@ spec:
 
     metadata:
 
-      annotations:
-
-        #######################################################
-        # DATADOG POD TAGGING
-        #######################################################
-
-        tags.datadoghq.com/env: "{{ $.Values.environment }}"
-
-        tags.datadoghq.com/service: "{{ $.Values.common.name }}"
-
-        tags.datadoghq.com/version: "{{ $.Values.image.tag }}"
-
-        ad.datadoghq.com/tags: |
-          {
-            "env":"{{ $.Values.environment }}",
-            "service":"{{ $.Values.common.name }}",
-            "version":"{{ $.Values.image.tag }}"
-          }
-
-        {{- with .Values.podAnnotations }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-
       labels:
 
         app: {{ $.Values.common.name }}
@@ -94,16 +51,6 @@ spec:
         chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
 
         heritage: {{ $.Release.Service }}
-
-        #######################################################
-        # DATADOG UNIFIED TAGGING
-        #######################################################
-
-        tags.datadoghq.com/env: "{{ $.Values.environment }}"
-
-        tags.datadoghq.com/service: "{{ $.Values.common.name }}"
-
-        tags.datadoghq.com/version: "{{ $.Values.image.tag }}"
 
     spec:
 
@@ -129,55 +76,6 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
 
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-
-          #####################################################
-          # DATADOG ENV VARIABLES
-          #####################################################
-
-          env:
-
-            - name: DD_ENV
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.labels['tags.datadoghq.com/env']
-
-            - name: DD_SERVICE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.labels['tags.datadoghq.com/service']
-
-            - name: DD_VERSION
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.labels['tags.datadoghq.com/version']
-
-            ###################################################
-            # ENABLE LOG INJECTION
-            ###################################################
-
-            - name: DD_LOGS_INJECTION
-              value: "true"
-
-            ###################################################
-            # ENABLE PROFILING
-            ###################################################
-
-            - name: DD_PROFILING_ENABLED
-              value: "true"
-
-            ###################################################
-            # ENABLE RUNTIME METRICS
-            ###################################################
-
-            - name: DD_RUNTIME_METRICS_ENABLED
-              value: "true"
-
-            ###################################################
-            # ENABLE TRACE COLLECTION
-            ###################################################
-
-            - name: DD_TRACE_ENABLED
-              value: "true"
 
           volumeMounts:
           {{- with .Values.volumeMounts }}
