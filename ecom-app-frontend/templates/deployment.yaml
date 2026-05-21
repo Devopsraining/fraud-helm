@@ -22,8 +22,14 @@ spec:
   template:
     metadata:
       {{- with .Values.podAnnotations }}
+      {{- if or .Values.datadog.enabled .Values.podAnnotations }}
       annotations:
+        {{- if .Values.datadog.enabled }}
+        ad.datadoghq.com/{{ .Chart.Name }}.tags: '["version:{{ .Values.datadog.version | default .Values.image.tag | default .Chart.AppVersion }}"]'
+        {{- end }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- end }}
       labels:
         app: {{ $.Values.common.name }}
@@ -31,6 +37,7 @@ spec:
         component: {{ $.Values.common.envName }}-{{ $.Values.common.name }}
         chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
         heritage: {{ $.Release.Service }}
+        app.kubernetes.io/version: "{{ .Values.datadog.version | default .Values.image.tag | default .Chart.AppVersion }}"
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -47,6 +54,15 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.datadog.enabled }}
+          env:
+            - name: DD_VERSION
+              value: "{{ .Values.datadog.version | default .Values.image.tag | default .Chart.AppVersion }}"
+            {{- if .Values.datadog.tags }}
+            - name: DD_TAGS
+              value: {{ join "," .Values.datadog.tags | quote }}
+            {{- end }}
+          {{- end }}
           volumeMounts:
           {{- with .Values.volumeMounts }}
           {{- toYaml . | nindent 12 }}
