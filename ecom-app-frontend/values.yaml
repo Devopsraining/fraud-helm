@@ -17,7 +17,7 @@ httpRoute:
 image:
   pullPolicy: IfNotPresent
   repository: gcr.io/devops-492107/ecommerce-frontend/ecommerce-frontend
-  tag: '22'
+  tag: '19'
   annotationsEnabled: true
 imagePullSecrets: []
 ingress:
