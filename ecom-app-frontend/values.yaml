@@ -17,10 +17,10 @@ httpRoute:
 image:
   pullPolicy: IfNotPresent
   repository: gcr.io/devops-492107/ecommerce-frontend/ecommerce-frontend
-  tag: '20'
+  tag: '21'
 datadog:
   enabled: true
-  version: ""
+  version: ''
   tags: []
   annotationsEnabled: true
 imagePullSecrets: []
