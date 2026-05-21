@@ -1,69 +1,108 @@
 affinity: {}
+
 autoscaling:
   enabled: true
   maxReplicas: 25
   minReplicas: 2
   targetCPUUtilizationPercentage: 80
+
 common:
   envName: dev
   name: ecom-frontend
+
 environment: dev
+
 fullnameOverride: ''
+
 healthCheck:
   port: 80
   requestPath: /actuator
+
 httpRoute:
   enabled: false
+
 image:
   pullPolicy: IfNotPresent
   repository: gcr.io/devops-492107/ecommerce-frontend/ecommerce-frontend
   tag: '20'
   annotationsEnabled: true
+
 imagePullSecrets: []
+
 ingress:
   annotations:
     kubernetes.io/ingress.allow-http: 'false'
     kubernetes.io/ingress.class: gce-internal
     kubernetes.io/ingress.regional-static-ip-name: ecom-frontend-static-ip
+
   enabled: false
+
   hosts:
     - host: ecom-frontend.internal
       paths:
         - path: /
           pathType: ImplementationSpecific
+
   tls:
     - hosts:
         - ecom-frontend.internal
       secretName: ecom-frontend-tls
-nameOverride: ''
+
+nameOverride: {}
+
 nodeSelector: {}
-podAnnotations: {}
+
+###############################################################
+# DATADOG POD ANNOTATIONS
+###############################################################
+
+podAnnotations:
+
+  admission.datadoghq.com/enabled: "true"
+
+  tags.datadoghq.com/env: "dev"
+
+  tags.datadoghq.com/service: "ecom-frontend"
+
+  tags.datadoghq.com/version: "20"
+
 podLabels: {}
+
 podSecurityContext: {}
+
 readinessProbe: null
+
 replicaCount: 2
+
 resources:
   limits:
     cpu: 200m
     memory: 1Gi
+
   requests:
     cpu: 200m
     memory: 1Gi
+
 securityContext: {}
+
 service:
   port: 80
   targetPort: 3000
   type: LoadBalancer
+
 serviceAccount:
   annotations: {}
   automount: true
   create: true
   name: fraud-ksa
+
 tolerations: []
+
 volumeMounts:
   - mountPath: /data/batch
     name: batch-volume
     readOnly: false
+
 volumes:
   - emptyDir:
       sizeLimit: 1Gi
