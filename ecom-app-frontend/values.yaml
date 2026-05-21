@@ -17,7 +17,7 @@ httpRoute:
 image:
   pullPolicy: IfNotPresent
   repository: gcr.io/devops-492107/ecommerce-frontend/ecommerce-frontend
-  tag: '17'
+  tag: '19'
 imagePullSecrets: []
 ingress:
   annotations:
@@ -26,14 +26,14 @@ ingress:
     kubernetes.io/ingress.regional-static-ip-name: ecom-frontend-static-ip
   enabled: false
   hosts:
-  - host: ecom-frontend.internal
-    paths:
-    - path: /
-      pathType: ImplementationSpecific
+    - host: ecom-frontend.internal
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
   tls:
-  - hosts:
-    - ecom-frontend.internal
-    secretName: ecom-frontend-tls
+    - hosts:
+        - ecom-frontend.internal
+      secretName: ecom-frontend-tls
 nameOverride: ''
 nodeSelector: {}
 podAnnotations: {}
@@ -60,10 +60,10 @@ serviceAccount:
   name: fraud-ksa
 tolerations: []
 volumeMounts:
-- mountPath: /data/batch
-  name: batch-volume
-  readOnly: false
+  - mountPath: /data/batch
+    name: batch-volume
+    readOnly: false
 volumes:
-- emptyDir:
-    sizeLimit: 1Gi
-  name: batch-volume
+  - emptyDir:
+      sizeLimit: 1Gi
+    name: batch-volume
