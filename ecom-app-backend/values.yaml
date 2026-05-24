@@ -5,7 +5,7 @@ replicaCount: 1
 image:
   repository: gcr.io/devops-492107/ecommerce-backend/ecommerce-backend
   pullPolicy: IfNotPresent
-  tag: '10'
+  tag: '2'
 environment: dev
 imagePullSecrets: []
 nameOverride: ''
