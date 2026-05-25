@@ -1,7 +1,7 @@
 affinity: {}
 autoscaling:
   enabled: true
-  maxReplicas: 2
+  maxReplicas: 4
   minReplicas: 2
   targetCPUUtilizationPercentage: 80
 common:
@@ -15,10 +15,10 @@ healthCheck:
 httpRoute:
   enabled: false
 image:
+  annotationsEnabled: true
   pullPolicy: IfNotPresent
   repository: gcr.io/devops-492107/ecommerce-frontend/ecommerce-frontend
   tag: '20'
-  annotationsEnabled: true
 imagePullSecrets: []
 ingress:
   annotations:
@@ -27,14 +27,14 @@ ingress:
     kubernetes.io/ingress.regional-static-ip-name: ecom-frontend-static-ip
   enabled: false
   hosts:
-    - host: ecom-frontend.internal
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
+  - host: ecom-frontend.internal
+    paths:
+    - path: /
+      pathType: ImplementationSpecific
   tls:
-    - hosts:
-        - ecom-frontend.internal
-      secretName: ecom-frontend-tls
+  - hosts:
+    - ecom-frontend.internal
+    secretName: ecom-frontend-tls
 nameOverride: {}
 nodeSelector: {}
 podAnnotations:
@@ -45,7 +45,7 @@ podAnnotations:
 podLabels: {}
 podSecurityContext: {}
 readinessProbe: null
-replicaCount: 2
+replicaCount: 3
 resources:
   limits:
     cpu: 200m
@@ -65,10 +65,10 @@ serviceAccount:
   name: fraud-ksa
 tolerations: []
 volumeMounts:
-  - mountPath: /data/batch
-    name: batch-volume
-    readOnly: false
+- mountPath: /data/batch
+  name: batch-volume
+  readOnly: false
 volumes:
-  - emptyDir:
-      sizeLimit: 1Gi
-    name: batch-volume
+- emptyDir:
+    sizeLimit: 1Gi
+  name: batch-volume
