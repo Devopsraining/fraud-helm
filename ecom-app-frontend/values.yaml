@@ -18,7 +18,7 @@ image:
   annotationsEnabled: true
   pullPolicy: IfNotPresent
   repository: gcr.io/devops-492107/ecommerce-frontend/ecommerce-frontend
-  tag: '19'
+  tag: '20'
 imagePullSecrets: []
 ingress:
   annotations:
